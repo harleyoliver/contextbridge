@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: contextbridge
+          POSTGRES_PASSWORD: contextbridge
+          POSTGRES_DB: contextbridge
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install --system -e ".[dev]"
+        working-directory: backend
+      - name: Lint
+        run: ruff check .
+        working-directory: backend
+      - name: Test
+        run: pytest tests/ -v
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://contextbridge:contextbridge@localhost:5432/contextbridge
