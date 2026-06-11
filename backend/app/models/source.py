@@ -1,13 +1,12 @@
 import uuid
 
-from sqlalchemy import JSON, String, Text
+from sqlalchemy import JSON, String, Text, UniqueConstraint   # add UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin
 
 
 class DataSource(Base, TimestampMixin):
-    """Represents a connected data source (CRM, ticketing, HR, etc.)"""
     __tablename__ = "data_sources"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -19,8 +18,12 @@ class DataSource(Base, TimestampMixin):
 
 
 class Record(Base, TimestampMixin):
-    """A raw record ingested from a data source"""
     __tablename__ = "records"
+
+    # Tells SQLAlchemy about a multi-column unique constraint
+    __table_args__ = (
+        UniqueConstraint("source_id", "external_id", name="uq_record_source_external"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     source_id: Mapped[uuid.UUID] = mapped_column()

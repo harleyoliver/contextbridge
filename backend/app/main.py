@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import health, sources
+from app.api.routes import health, sources, ingest
 from app.config import settings
 from app.db.session import init_db
 
@@ -31,3 +31,4 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(sources.router, prefix="/api/sources", tags=["sources"])
+app.include_router(ingest.router, prefix="/api/ingest", tags=["ingestion"])
